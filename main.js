@@ -11,13 +11,12 @@ function addTask() {
         return;
     }
 
-    // Gabungkan tanggal dan waktu agar bisa di-sort dengan akurat
     const fullSchedule = new Date(`${taskDate}T${taskTime}`);
 
     const newTask = {
         id: Date.now(),
         name: taskName,
-        schedule: fullSchedule, // Menggunakan satu objek Date untuk tanggal & waktu
+        schedule: fullSchedule,
         desc: taskDesc,
         createdAt: new Date()
     };
@@ -45,7 +44,7 @@ function renderTasks() {
     listElement.innerHTML = '';
 
     let sortedTasks = [...tasks];
-    
+
     // Logika Pengurutan yang diperbaiki
     if (sortBy === 'newest') sortedTasks.sort((a, b) => b.createdAt - a.createdAt);
     if (sortBy === 'oldest') sortedTasks.sort((a, b) => a.createdAt - b.createdAt);
@@ -54,13 +53,13 @@ function renderTasks() {
 
     sortedTasks.forEach(task => {
         const li = document.createElement('li');
-        
+
         // Format tampilan tanggal dan waktu yang lebih manusiawi
-        const dateString = task.schedule.toLocaleDateString('id-ID', { 
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+        const dateString = task.schedule.toLocaleDateString('id-ID', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
-        const timeString = task.schedule.toLocaleTimeString('id-ID', { 
-            hour: '2-digit', minute: '2-digit' 
+        const timeString = task.schedule.toLocaleTimeString('id-ID', {
+            hour: '2-digit', minute: '2-digit'
         });
 
         li.innerHTML = `
@@ -71,4 +70,31 @@ function renderTasks() {
         `;
         listElement.appendChild(li);
     });
+
+    const formData = new FormData();
+    formData.append('nama', taskName);
+    formData.append('jadwal', `${taskDate} ${taskTime}`);
+    formData.append('deskripsi', taskDesc);
+
+    fetch('simpan_tugas.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload(); // Refresh halaman untuk melihat data baru
+            } else {
+                alert("Gagal menyimpan data");
+            }
+        });
+
+
+
+
+
+
+
+
+
 }
