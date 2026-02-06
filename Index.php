@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -40,24 +41,6 @@
         </div>
 
         <ul id="taskList">
-            <?php
-            include 'koneksi.php';
-            // Ambil data (Default: Terbaru)
-            $sql = "SELECT * FROM kegiatan ORDER BY created_at DESC";
-            $result = mysqli_query($koneksi, $sql);
-
-            while ($row = mysqli_fetch_assoc($result)) {
-                $date = date('d F Y', strtotime($row['jadwal']));
-                $time = date('H:i', strtotime($row['jadwal']));
-                echo "<li>
-                <h4>{$row['nama_kegiatan']}</h4>
-                <p>{$row['deskripsi']}</p>
-                <span class='date-tag'>📅 $date - $time</span>
-                <a href='hapus_tugas.php?id={$row['id']}' class='delete-btn' 
-                   onclick='return confirm(\"Yakin hapus?\")'>Hapus</a>
-              </li>";
-            }
-            ?>
         </ul>
     </div>
 

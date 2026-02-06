@@ -4,7 +4,7 @@ $user = 'root';
 $pass = '';
 $db = 'remind';
 
-$koneksi = mysqli_connect($host, $user, $pass, $db);
+
 
 $koneksi = mysqli_connect($host, $user, $pass, $db);
 if (!$koneksi) {

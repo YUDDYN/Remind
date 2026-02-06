@@ -1,4 +1,22 @@
+
 let tasks = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadTasks();
+});
+
+function loadTasks() {
+    fetch('ambil_tugas.php')
+        .then(response => response.json())
+        .then(data => {
+            tasks = data.map(task => ({
+                ...task,
+                schedule: new Date(task.jadwal),
+                createdAt: new Date(task.created_at)
+            }));
+            renderTasks();
+        });
+}
 
 function addTask() {
     const taskName = document.getElementById('taskInput').value;
@@ -11,19 +29,24 @@ function addTask() {
         return;
     }
 
-    const fullSchedule = new Date(`${taskDate}T${taskTime}`);
+    const formData = new FormData();
+    formData.append('nama', taskName);
+    formData.append('jadwal', `${taskDate} ${taskTime}`);
+    formData.append('deskripsi', taskDesc);
 
-    const newTask = {
-        id: Date.now(),
-        name: taskName,
-        schedule: fullSchedule,
-        desc: taskDesc,
-        createdAt: new Date()
-    };
-
-    tasks.push(newTask);
-    clearInputs();
-    renderTasks();
+    fetch('simpan_tugas.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            clearInputs();
+            loadTasks(); // Muat ulang data dari server
+        } else {
+            alert("Gagal menyimpan data");
+        }
+    });
 }
 
 function clearInputs() {
@@ -34,8 +57,17 @@ function clearInputs() {
 }
 
 function deleteTask(id) {
-    tasks = tasks.filter(task => task.id !== id);
-    renderTasks();
+    if (confirm("Yakin hapus?")) {
+        fetch(`hapus_tugas.php?id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    loadTasks(); // Muat ulang data dari server
+                } else {
+                    alert("Gagal menghapus data");
+                }
+            });
+    }
 }
 
 function renderTasks() {
@@ -45,7 +77,6 @@ function renderTasks() {
 
     let sortedTasks = [...tasks];
 
-    // Logika Pengurutan yang diperbaiki
     if (sortBy === 'newest') sortedTasks.sort((a, b) => b.createdAt - a.createdAt);
     if (sortBy === 'oldest') sortedTasks.sort((a, b) => a.createdAt - b.createdAt);
     if (sortBy === 'nearest') sortedTasks.sort((a, b) => a.schedule - b.schedule);
@@ -54,7 +85,6 @@ function renderTasks() {
     sortedTasks.forEach(task => {
         const li = document.createElement('li');
 
-        // Format tampilan tanggal dan waktu yang lebih manusiawi
         const dateString = task.schedule.toLocaleDateString('id-ID', {
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
@@ -63,38 +93,11 @@ function renderTasks() {
         });
 
         li.innerHTML = `
-            <h4>${task.name}</h4>
+            <h4>${task.nama_kegiatan}</h4>
+            <p>${task.deskripsi}</p>
             <span class="date-tag">📅 ${dateString} - ${timeString}</span>
-       
             <button class="delete-btn" onclick="deleteTask(${task.id})">Hapus</button>
         `;
         listElement.appendChild(li);
     });
-
-    const formData = new FormData();
-    formData.append('nama', taskName);
-    formData.append('jadwal', `${taskDate} ${taskTime}`);
-    formData.append('deskripsi', taskDesc);
-
-    fetch('simpan_tugas.php', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                location.reload(); // Refresh halaman untuk melihat data baru
-            } else {
-                alert("Gagal menyimpan data");
-            }
-        });
-
-
-
-
-
-
-
-
-
 }
